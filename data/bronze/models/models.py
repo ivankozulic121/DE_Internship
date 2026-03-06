@@ -7,7 +7,8 @@ class StagingFormula1(Base):
     __tablename__ = "formula1_data"
     __table_args__ = {"schema": "bronze"}
 
-    resultId = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    resultId = Column(Integer)
     raceId = Column(Integer)
     driverId = Column(Integer)
     constructorId = Column(Integer)
