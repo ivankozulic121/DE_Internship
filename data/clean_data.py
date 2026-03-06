@@ -14,6 +14,7 @@ formulaDF = pd.read_csv("C:\\Users\\ivan.kozulic\\Downloads\\dataEngineeringData
 #Get columns info 
 print(formulaDF.info())
 
+
 # Check for unique values to make sure missing entries aren't represented differently (e.g., '\N', 'None', '', etc.)
 for col in formulaDF.columns:
     print(f"\nColumn: {col}")
@@ -33,12 +34,25 @@ for col in formulaDF.columns:
     print("Null counts: ", formulaDF[col].isna().sum())
 
 
+#Convert time values to appropriate format
+formulaDF["milliseconds"] = pd.to_numeric(formulaDF["milliseconds"], errors="coerce")
+formulaDF["time"] = (
+    pd.to_timedelta(formulaDF["milliseconds"], unit="ms")
+    .astype(str)
+    .str.replace("0 days ", "")
+    .str[:-3]
+)
+
 #Drop NA values from these columns as they will not impact analysis
 formulaDF.dropna(subset=['fastestLap', 'fastestLapTime', 'fastestLapSpeed'], inplace=True)
 
 #Convert to integer in order to fill missing values with median
 formulaDF['alt'] = pd.to_numeric(formulaDF['alt'], errors='coerce').astype('Int64')
 formulaDF['alt'] = formulaDF['alt'].fillna(formulaDF['alt'].median())
+
+
+
+
 
 
 
