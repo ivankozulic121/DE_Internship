@@ -29,7 +29,7 @@ def create_bronze_tables():
 
         Base.metadata.create_all(engine)
 
-        logging.info("Bronze schema tables successfully created.")
+        logging.info("Bronze schema table successfully created.")
 
     except Exception as e:
         logging.error(f"Failed to create tables: {e}")

@@ -4,13 +4,14 @@ from sqlalchemy.orm import declarative_base
 Base = declarative_base()
 
 class StagingFormula1(Base):
-    __tablename__ = "formula1_data"
+    __tablename__ = "formula1_staging"
     __table_args__ = {"schema": "bronze"}
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     resultId = Column(Integer)
     raceId = Column(Integer)
     driverId = Column(Integer)
+    circuitId = Column(Integer)
     constructorId = Column(Integer)
     number = Column(Integer)
     grid = Column(Integer)
