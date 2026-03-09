@@ -1,8 +1,17 @@
 from sqlalchemy import create_engine
 from extract import extract 
 import pandas as pd
+import re
 
 formulaDF = extract()
+
+def convert_duration_if_colon(s):
+        if ":" in s:
+            s_no_dot = s.replace(".", "")
+            s_fixed = re.sub(r":", ".", s_no_dot, count=1)
+            return float(s_fixed)
+        else:
+            return float(s)
 
 def transform():
     #Check for unique values to make sure missing entries aren't represented differently (e.g., '\N', 'None', '', etc.)
@@ -40,6 +49,9 @@ def transform():
     formulaDF['alt'] = pd.to_numeric(formulaDF['alt'], errors='coerce').astype('Int64')
     formulaDF['alt'] = formulaDF['alt'].fillna(formulaDF['alt'].median())
 
+    #Format all records that have time like '18:56.074'
+    formulaDF["duration"] = formulaDF["duration"].apply(convert_duration_if_colon)
+        
     return formulaDF
 
 

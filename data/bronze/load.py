@@ -27,10 +27,9 @@ DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_POR
 
 
 try:
-
     engine = create_engine(DATABASE_URL)
     
-    formulaDF.to_sql(name='formula1_data', con=engine, schema='bronze', if_exists='append', index=False)
+    formulaDF.to_sql(name='formula1_staging', con=engine, schema='bronze', if_exists='append', index=False)
     logging.info("Data successfully loaded to staging table")
 
 

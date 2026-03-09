@@ -25,11 +25,14 @@ def extract():
     try:
 
         engine = create_engine(DATABASE_URL)
-        query = "SELECT * FROM bronze.formula1_data"
+        query = "SELECT * FROM bronze.formula1_staging"
         df = pd.read_sql(query, con=engine)
         logging.info(f"Successfully loaded {len(df)} rows from SQL table into DataFrame")
+        
 
     except Exception as e:
         logging.error(f"Failed to load data from SQL: {e}")
 
     return df
+
+    
