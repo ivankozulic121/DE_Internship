@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from extract import extract 
+from .extract import extract 
 import pandas as pd
 import re
 

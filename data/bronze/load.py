@@ -1,9 +1,9 @@
-from pathlib import Path
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 import logging
 import os
+from data.db import get_database_url
 
 load_dotenv()
 
@@ -17,14 +17,7 @@ csv_path = os.getenv("DATA_CSV_PATH")
 
 formulaDF = pd.read_csv(csv_path, index_col=0)
 
-DB_USER = os.environ.get("DB_USER")
-DB_PASSWORD = os.environ.get("DB_PASSWORD")
-DB_HOST = os.environ.get("DB_HOST")
-DB_PORT = os.environ.get("DB_PORT")
-DB_NAME = os.environ.get("DB_NAME")
-
-DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
+DATABASE_URL = get_database_url()
 
 def load_staging():
     try:

@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine, text
-from models.models import Base
-import os
+from .models.models import Base
 from dotenv import load_dotenv
 import logging
+from data.db import get_database_url
 
 load_dotenv()
 
@@ -11,13 +11,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-DB_USER = os.environ.get("DB_USER")
-DB_PASSWORD = os.environ.get("DB_PASSWORD")
-DB_HOST = os.environ.get("DB_HOST")
-DB_PORT = os.environ.get("DB_PORT")
-DB_NAME = os.environ.get("DB_NAME")
-
-DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = get_database_url()
 
 def create_bronze_tables():
     try:

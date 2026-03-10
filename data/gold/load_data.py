@@ -1,8 +1,7 @@
-import os
 import logging
-import sqlalchemy
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
+from data.db import get_database_url
 
 # ---------------------------------------------------
 # LOAD ENV VARIABLES
@@ -14,13 +13,7 @@ load_dotenv()
 # DATABASE CONNECTION
 # ---------------------------------------------------
 
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-
-DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = get_database_url()
 
 engine = create_engine(
     DATABASE_URL,
@@ -70,7 +63,7 @@ def load_dim_driver(conn):
 def load_dim_constructor(conn):
     query = """
     INSERT INTO gold.dim_constructors
-    ("constructorId", constructorRef", "name", "nationality", "url")
+    ("constructorId", "constructorRef", "name", "nationality", "url")
     SELECT DISTINCT
         s."constructorId",
         NULLIF(s."constructorRef",'\\N'),
@@ -89,7 +82,7 @@ def load_dim_constructor(conn):
 def load_dim_circuit(conn):
     query = r"""
     INSERT INTO gold.dim_circuits
-    ("circuitId", circuitRef", "name", "location", "country", "lat", "long", "alt", "url")
+    ("circuitId", "circuitRef", "name", "location", "country", "lat", "long", "alt", "url")
     SELECT DISTINCT
         s."circuitId",
         NULLIF(s."circuitRef",'\\N'),
@@ -98,7 +91,8 @@ def load_dim_circuit(conn):
         NULLIF(s."country",'\\N'),
         NULLIF(NULLIF(s."lat"::text, '\N'), '')::float,
         NULLIF(NULLIF(s."lng"::text, '\N'), '')::float,
-        NULLIF(NULLIF(s."alt"::text, '\N'), '')::float
+        NULLIF(NULLIF(s."alt"::text, '\N'), '')::float,
+        NULLIF(s."url_y"::text,'\\N')
     FROM silver.formula1_silver s
     ON CONFLICT ON CONSTRAINT dim_circuits_pkey DO NOTHING
     """
@@ -186,6 +180,56 @@ def load_fact_results(conn):
     conn.execute(text(query))
 
 # ---------------------------------------------------
+# FACT PIT STOPS
+# ---------------------------------------------------
+
+def load_fact_pit_stops(conn):
+    query = """
+    INSERT INTO gold.fact_pit_stops
+    ("raceId", "driverId", "stop", "lap", "time", "duration", "milliseconds")
+    SELECT
+        r."raceId",
+        d."driverId",
+        NULLIF(NULLIF(s."stop"::text,'\\N'),'')::int,
+        NULLIF(NULLIF(s."lap"::text,'\\N'),'')::int,
+        NULLIF(s."time"::text,'\\N')::time,
+        NULLIF(s."duration"::text,'\\N')::float,
+        NULLIF(NULLIF(s."milliseconds"::text,'\\N'),'')::int
+    FROM silver.formula1_silver s
+    JOIN gold.dim_drivers d ON d."driverRef" = s."driverRef"
+    JOIN gold.dim_races r ON r.year = NULLIF(NULLIF(s."year"::text,'\\N'),'')::int
+                        AND r.round = NULLIF(NULLIF(s."round"::text,'\\N'),'')::int
+    ON CONFLICT DO NOTHING
+    """
+    conn.execute(text(query))
+
+
+# ---------------------------------------------------
+# FACT LAP TIMES
+# ---------------------------------------------------
+
+def load_fact_lap_times(conn):
+    query = """
+    INSERT INTO gold.fact_lap_times
+    ("raceId", "driverId",
+     "lap", "position", "time", "milliseconds")
+    SELECT
+        r."raceId",
+        d."driverId",
+        NULLIF(NULLIF(s."lap"::text,'\\N'),'')::int,
+        NULLIF(NULLIF(s."position"::text,'\\N'),'')::int,
+        NULLIF(s."time"::text,'\\N')::time,
+        NULLIF(NULLIF(s."milliseconds"::text,'\\N'),'')::int
+    FROM silver.formula1_silver s
+    JOIN gold.dim_drivers d ON d."driverRef" = s."driverRef"
+    JOIN gold.dim_races r ON r.year = NULLIF(NULLIF(s."year"::text,'\\N'),'')::int
+                      AND r.round = NULLIF(NULLIF(s."round"::text,'\\N'),'')::int
+    ON CONFLICT DO NOTHING
+    """
+    conn.execute(text(query))
+
+
+# ---------------------------------------------------
 # MAIN PIPELINE
 # ---------------------------------------------------
 
@@ -199,8 +243,9 @@ def run_db_load():
         load_dim_circuit(conn)
         load_dim_race(conn)
         load_dim_date(conn)
-
         load_fact_results(conn)
+        load_fact_pit_stops(conn)
+        load_fact_lap_times(conn)
 
         logger.info("DB load finished")
 
