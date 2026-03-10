@@ -1,11 +1,11 @@
 from .transform import transform
+from .extract import extract
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import logging
 import pandas as pd
 from data.db import get_database_url
 
-formulaDF = transform()
 
 load_dotenv()
 
@@ -14,14 +14,14 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-def load(DATABASE_URL):
+def load(DATABASE_URL, dataFrame):
     try:
         engine = create_engine(DATABASE_URL)
 
         schema='silver'
         table_name = 'formula1_silver'
 
-        formulaDF.to_sql(name=table_name,con=engine, schema=schema, index=False, if_exists='replace')
+        dataFrame.to_sql(name=table_name,con=engine, schema=schema, index=False, if_exists='replace')
         
         logging.info(f"DataFrame successfully loaded into {schema}.{table_name}")
 
@@ -32,4 +32,6 @@ def load(DATABASE_URL):
 
 if __name__ == "__main__":
     DATABASE_URL = get_database_url()
-    load(DATABASE_URL)
+    df = extract(DATABASE_URL)
+    df_transformed = transform(df)
+    load(DATABASE_URL, df_transformed)
