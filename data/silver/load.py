@@ -14,17 +14,22 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-DATABASE_URL = get_database_url()
+def load(DATABASE_URL):
+    try:
+        engine = create_engine(DATABASE_URL)
 
-try:
-    engine = create_engine(DATABASE_URL)
+        schema='silver'
+        table_name = 'formula1_silver'
 
-    schema='silver'
-    table_name = 'formula1_silver'
+        formulaDF.to_sql(name=table_name,con=engine, schema=schema, index=False, if_exists='replace')
+        
+        logging.info(f"DataFrame successfully loaded into {schema}.{table_name}")
 
-    formulaDF.to_sql(name=table_name,con=engine, schema=schema, index=False, if_exists='replace')
-    
-    logging.info(f"DataFrame successfully loaded into {schema}.{table_name}")
+    except Exception as e:
+        logging.error(f"Failed to upload DataFrame to SQL: {e}")
 
-except Exception as e:
-    logging.error(f"Failed to upload DataFrame to SQL: {e}")
+
+
+if __name__ == "__main__":
+    DATABASE_URL = get_database_url()
+    load(DATABASE_URL)

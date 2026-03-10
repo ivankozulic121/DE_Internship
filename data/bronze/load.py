@@ -13,14 +13,10 @@ logging.basicConfig(
 )
 
 
-csv_path = os.getenv("DATA_CSV_PATH")
-
-formulaDF = pd.read_csv(csv_path, index_col=0)
-
-DATABASE_URL = get_database_url()
-
-def load_staging():
+def load_staging(csv_path,DATABASE_URL):
+    
     try:
+        formulaDF = pd.read_csv(csv_path, index_col=0)
         engine = create_engine(DATABASE_URL)
         
         formulaDF.to_sql(name='formula1_staging', con=engine, schema='bronze', if_exists='append', index=False)
@@ -32,4 +28,6 @@ def load_staging():
 
 
 if __name__ == "__main__":
-    load_staging()
+    csv_path = os.getenv("DATA_CSV_PATH")
+    DATABASE_URL = get_database_url()
+    load_staging(csv_path,DATABASE_URL)

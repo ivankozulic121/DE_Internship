@@ -4,29 +4,33 @@ from dotenv import load_dotenv
 import logging
 from data.db import get_database_url
 
-# Load env variables
+load_dotenv()
 
-def extract():
-    load_dotenv()
-
-    logging.basicConfig(
+logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s"
     )
 
-    DATABASE_URL = get_database_url()
 
+def extract(DATABASE_URL):
     try:
-
         engine = create_engine(DATABASE_URL)
         query = "SELECT * FROM bronze.formula1_staging"
         df = pd.read_sql(query, con=engine)
         logging.info(f"Successfully loaded {len(df)} rows from SQL table into DataFrame")
         
-
     except Exception as e:
         logging.error(f"Failed to load data from SQL: {e}")
 
     return df
+
+
+
+
+if __name__ == "__main__":
+     DATABASE_URL = get_database_url()
+     extract(DATABASE_URL)
+
+
 
     

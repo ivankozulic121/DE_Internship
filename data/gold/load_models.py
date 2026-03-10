@@ -12,10 +12,8 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-DATABASE_URL = get_database_url()
 
-
-def load_models():
+def load_models(DATABASE_URL):
     try:
 
         engine = create_engine(DATABASE_URL, echo=False)
@@ -32,4 +30,5 @@ def load_models():
 
 
 if __name__ == "__main__":
-    load_models()
+    DATABASE_URL = get_database_url()
+    load_models(DATABASE_URL)

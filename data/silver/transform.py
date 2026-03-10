@@ -3,7 +3,7 @@ from .extract import extract
 import pandas as pd
 import re
 
-formulaDF = extract()
+
 
 def convert_duration_if_colon(s):
         if ":" in s:
@@ -13,7 +13,7 @@ def convert_duration_if_colon(s):
         else:
             return float(s)
 
-def transform():
+def transform(dataFrame):
     #Check for unique values to make sure missing entries aren't represented differently (e.g., '\N', 'None', '', etc.)
     for col in formulaDF.columns:
         print(f"\nColumn: {col}")
@@ -56,6 +56,8 @@ def transform():
         
     return formulaDF
 
-
+if __name__ == "__main__":
+    formulaDF = extract()
+    transform(formulaDF)
 
 
