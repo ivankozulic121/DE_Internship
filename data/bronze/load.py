@@ -26,12 +26,17 @@ DB_NAME = os.environ.get("DB_NAME")
 DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
-try:
-    engine = create_engine(DATABASE_URL)
-    
-    formulaDF.to_sql(name='formula1_staging', con=engine, schema='bronze', if_exists='append', index=False)
-    logging.info("Data successfully loaded to staging table")
+def load_staging():
+    try:
+        engine = create_engine(DATABASE_URL)
+        
+        formulaDF.to_sql(name='formula1_staging', con=engine, schema='bronze', if_exists='append', index=False)
+        logging.info("Data successfully loaded to staging table")
 
 
-except Exception as e:
-    logging.error(f"Failed to load data into staging table: {e}")
+    except Exception as e:
+        logging.error(f"Failed to load data into staging table: {e}")
+
+
+if __name__ == "__main__":
+    load_staging()

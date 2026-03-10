@@ -96,10 +96,9 @@ def load_dim_circuit(conn):
         NULLIF(s."name_y",'\\N'),
         NULLIF(s."location",'\\N'),
         NULLIF(s."country",'\\N'),
-        CASE WHEN s."lat"::text IN ('\N', '') THEN NULL ELSE s."lat"::float END,
-        CASE WHEN s."lng"::text  IN ('\N', '') THEN NULL ELSE s."lng"::float  END,
-        CASE WHEN s."alt"::text IN ('\N', '') THEN NULL ELSE s."alt"::float  END,
-        NULLIF(s."url_y",'\\N')
+        NULLIF(NULLIF(s."lat"::text, '\N'), '')::float,
+        NULLIF(NULLIF(s."lng"::text, '\N'), '')::float,
+        NULLIF(NULLIF(s."alt"::text, '\N'), '')::float
     FROM silver.formula1_silver s
     ON CONFLICT ON CONSTRAINT dim_circuits_pkey DO NOTHING
     """
@@ -190,10 +189,10 @@ def load_fact_results(conn):
 # MAIN PIPELINE
 # ---------------------------------------------------
 
-def run_dw_load():
+def run_db_load():
     with engine.begin() as conn:
 
-        logger.info("Starting DW load")
+        logger.info("Starting DB load")
 
         load_dim_driver(conn)
         load_dim_constructor(conn)
@@ -203,9 +202,9 @@ def run_dw_load():
 
         load_fact_results(conn)
 
-        logger.info("DW load finished")
+        logger.info("DB load finished")
 
 # ---------------------------------------------------
 
 if __name__ == "__main__":
-    run_dw_load()
+    run_db_load()

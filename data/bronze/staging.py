@@ -34,4 +34,6 @@ def create_bronze_tables():
     except Exception as e:
         logging.error(f"Failed to create tables: {e}")
 
-create_bronze_tables()
+
+if __name__ == "__main__":
+    create_bronze_tables()

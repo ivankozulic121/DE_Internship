@@ -3,7 +3,7 @@ import logging
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.models import Base  # tvoj refaktorisani models.py fajl
+from models.models import Base
 
 
 load_dotenv()
@@ -24,17 +24,22 @@ DB_NAME = os.environ.get("DB_NAME", "mydatabase")
 
 DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-try:
 
-    engine = create_engine(DATABASE_URL, echo=False)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+def load_models():
+    try:
 
-    Base.metadata.create_all(engine)
-    logging.info("All tables successfully loaded into gold schema.")
+        engine = create_engine(DATABASE_URL, echo=False)
+        Session = sessionmaker(bind=engine)
+        session = Session()
 
-    session.close()
+        Base.metadata.create_all(engine)
+        logging.info("All tables successfully loaded into gold schema.")
 
-except Exception as e:
-    logging.error(f"Error loading tables into DB: {e}")
+        session.close()
 
+    except Exception as e:
+        logging.error(f"Error loading tables into DB: {e}")
+
+
+if __name__ == "__main__":
+    load_models()

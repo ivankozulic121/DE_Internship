@@ -32,6 +32,8 @@ def transform():
         print(f"\nColumn: {col}")
         print("Null counts: ", formulaDF[col].isna().sum())
 
+    
+
 
     #Convert time values to appropriate format
     formulaDF["milliseconds"] = pd.to_numeric(formulaDF["milliseconds"], errors="coerce")
