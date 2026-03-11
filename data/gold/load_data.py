@@ -10,19 +10,6 @@ from data.db import get_database_url
 load_dotenv()
 
 # ---------------------------------------------------
-# DATABASE CONNECTION
-# ---------------------------------------------------
-
-DATABASE_URL = get_database_url()
-
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10
-)
-
-# ---------------------------------------------------
 # LOGGING
 # ---------------------------------------------------
 
@@ -123,16 +110,16 @@ def load_dim_race(conn):
 # ---------------------------------------------------
 
 def load_dim_date(conn):
-    query = """
+    query = r"""
     INSERT INTO gold.dim_date
     ("date", "year", "month", "day", "quarter", "dayOfWeek")
     SELECT DISTINCT
-        NULLIF(NULLIF(s."date",'\\N'),'')::date,
-        EXTRACT(YEAR FROM NULLIF(NULLIF(s."date",'\\N'),'')::date),
-        EXTRACT(MONTH FROM NULLIF(NULLIF(s."date",'\\N'),'')::date),
-        EXTRACT(DAY FROM NULLIF(NULLIF(s."date",'\\N'),'')::date),
-        EXTRACT(QUARTER FROM NULLIF(NULLIF(s."date",'\\N'),'')::date),
-        EXTRACT(DOW FROM NULLIF(NULLIF(s."date",'\\N'),'')::date)
+        TO_CHAR(NULLIF(NULLIF(s."date"::text,'\N'),'')::date, 'YYYYMMDD')::integer,
+        EXTRACT(YEAR FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date),
+        EXTRACT(MONTH FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date),
+        EXTRACT(DAY FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date),
+        EXTRACT(QUARTER FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date),
+        EXTRACT(DOW FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date)
     FROM silver.formula1_silver s
     ON CONFLICT ON CONSTRAINT dim_date_pkey DO NOTHING
     """
@@ -143,7 +130,7 @@ def load_dim_date(conn):
 # ---------------------------------------------------
 
 def load_fact_results(conn):
-    query = """
+    query = r"""
     INSERT INTO gold.fact_results
     ("raceId", "driverId", "constructorId", "circuitId", "dateId",
      "carNumber", "grid", "position", "positionText", "positionOrder",
@@ -154,7 +141,7 @@ def load_fact_results(conn):
         d."driverId",
         c."constructorId",
         ci."circuitId",
-        t."dateId",
+        t."date",
         NULLIF(NULLIF(s."number"::text,'\\N'),'')::int,
         NULLIF(NULLIF(s."grid"::text,'\\N'),'')::int,
         NULLIF(NULLIF(s."position"::text,'\\N'),'')::int,
@@ -174,7 +161,7 @@ def load_fact_results(conn):
     JOIN gold.dim_circuits ci ON ci."circuitRef" = s."circuitRef"
     JOIN gold.dim_races r ON r."year" = NULLIF(NULLIF(s."year"::text,'\\N'),'')::int
                       AND r."round" = NULLIF(NULLIF(s."round"::text,'\\N'),'')::int
-    JOIN gold.dim_date t ON t.date = NULLIF(NULLIF(s."date"::text,'\\N'),'')::date
+    JOIN gold.dim_date t ON t.date = TO_CHAR(NULLIF(NULLIF(s."date"::text,'\N'),'')::date, 'YYYYMMDD')::integer
     ON CONFLICT DO NOTHING
     """
     conn.execute(text(query))
@@ -233,7 +220,7 @@ def load_fact_lap_times(conn):
 # MAIN PIPELINE
 # ---------------------------------------------------
 
-def run_db_load():
+def run_db_load(engine):
     with engine.begin() as conn:
 
         logger.info("Starting DB load")
@@ -252,4 +239,11 @@ def run_db_load():
 # ---------------------------------------------------
 
 if __name__ == "__main__":
-    run_db_load()
+    DATABASE_URL = get_database_url()
+    engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10
+    )
+    run_db_load(engine)
