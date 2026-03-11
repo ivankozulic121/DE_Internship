@@ -11,9 +11,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-DATABASE_URL = get_database_url()
-
-def create_bronze_tables():
+def create_bronze_tables(DATABASE_URL):
     try:
         engine = create_engine(DATABASE_URL)
 
@@ -30,4 +28,5 @@ def create_bronze_tables():
 
 
 if __name__ == "__main__":
-    create_bronze_tables()
+    DATABASE_URL = get_database_url()
+    create_bronze_tables(DATABASE_URL)
