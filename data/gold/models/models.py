@@ -13,7 +13,7 @@ class Result(Base):
     driverId = Column(Integer, ForeignKey("gold.dim_drivers.driverId"))
     constructorId = Column(Integer, ForeignKey("gold.dim_constructors.constructorId"))
     circuitId = Column(Integer, ForeignKey("gold.dim_circuits.circuitId"))
-    dateId = Column(Integer, ForeignKey("gold.dim_date.dateId"))
+    dateId = Column(Integer, ForeignKey("gold.dim_date.date"))
     carNumber = Column(Integer)
     grid = Column(Integer)
     position = Column(Integer)
@@ -105,8 +105,7 @@ class Date(Base):
     __tablename__ = "dim_date"
     __table_args__ = {"schema": "gold"}
 
-    dateId = Column(Integer, primary_key=True)
-    date = Column(Date)
+    date = Column(Integer, primary_key=True)
     year = Column(Integer)
     month = Column(Integer)
     day = Column(Integer)
