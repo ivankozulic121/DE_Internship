@@ -14,26 +14,11 @@ def convert_duration_if_colon(s):
             return float(s)
 
 def transform(dataFrame):
-    #Check for unique values to make sure missing entries aren't represented differently (e.g., '\N', 'None', '', etc.)
-    for col in dataFrame.columns:
-        print(f"\nColumn: {col}")
-        print("Unique count: ", dataFrame[col].nunique())
-        print("Values: ", dataFrame[col].unique())
-        print("Data type: ", dataFrame[col].dtype)
-        print("Null counts: ", dataFrame[col].isna().sum())
-
-
+    
     null_values = ['\\N', 'nan', 'NaN', '', 'None']
 
-    # Iterate through all columns and replace any non-standard null indicators ('\N') 
-    # with Pandas NA (pd.NA), so that all missing values are consistently recognized as nulls.
     for col in dataFrame.columns:
         dataFrame[col] = dataFrame[col].replace(null_values, pd.NA)
-        print(f"\nColumn: {col}")
-        print("Null counts: ", dataFrame[col].isna().sum())
-
-    
-
 
     #Convert time values to appropriate format
     dataFrame["milliseconds"] = pd.to_numeric(dataFrame["milliseconds"], errors="coerce")

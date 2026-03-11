@@ -19,7 +19,7 @@ def load_staging(csv_path,DATABASE_URL):
         formulaDF = pd.read_csv(csv_path, index_col=0)
         engine = create_engine(DATABASE_URL)
         
-        formulaDF.to_sql(name='formula1_staging', con=engine, schema='bronze', if_exists='append', index=False)
+        formulaDF.to_sql(name='formula1_staging', con=engine, schema='bronze', if_exists='replace', index=False)
         logging.info("Data successfully loaded to staging table")
 
 

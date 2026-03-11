@@ -17,13 +17,9 @@ def load_models(DATABASE_URL):
     try:
 
         engine = create_engine(DATABASE_URL, echo=False)
-        Session = sessionmaker(bind=engine)
-        session = Session()
 
         Base.metadata.create_all(engine)
         logging.info("All tables successfully loaded into gold schema.")
-
-        session.close()
 
     except Exception as e:
         logging.error(f"Error loading tables into DB: {e}")
