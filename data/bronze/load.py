@@ -1,8 +1,9 @@
-import pandas as pd
+import psycopg2
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import text
 import logging
 import os
+import io
 from data.db import engine
 
 load_dotenv()
@@ -18,16 +19,29 @@ def load_bronze_table():
         if not csv_path:
             raise ValueError("DATA_CSV_PATH not set in environment variables")
         
-        df = pd.read_csv(csv_path)
-
-        df.to_sql(
-            name='formula1_staging',
-            con=engine,
-            schema='bronze',
-            if_exists='replace',
-            index=False
-        )
-        logging.info("Data successfully loaded to staging table")
+        with engine.begin() as conn:
+            conn.execute(text("TRUNCATE TABLE bronze.formula1_staging"))
+            
+            # Koristi COPY za najbrže učitavanje
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                # Preskoči header ako postoji
+                next(f)
+                
+                # PostgreSQL COPY komanda
+                cursor = conn.connection.cursor()
+                cursor.copy_expert(
+                    """
+                    COPY bronze.formula1_staging FROM STDIN WITH 
+                    CSV 
+                    DELIMITER ',' 
+                    NULL AS '' 
+                    QUOTE '"'
+                    ESCAPE '\\'
+                    """, 
+                    f
+                )
+            
+            logging.info("Data successfully loaded to staging table using COPY")
 
     except Exception as e:
         logging.error(f"Failed to load data into staging table: {e}")

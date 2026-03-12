@@ -15,6 +15,7 @@ def create_bronze_table():
     try:
         with engine.begin() as conn:
             conn.execute(text("CREATE SCHEMA IF NOT EXISTS bronze"))
+            conn.execute(text("DROP TABLE IF EXISTS bronze.formula1_staging CASCADE"))
             conn.commit()
 
         Base.metadata.create_all(engine)
