@@ -3,31 +3,35 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 import logging
 import os
-from data.db import get_database_url
+from data.db import engine
 
 load_dotenv()
 
 logging.basicConfig(
-    level=logging.INFO,   # minimum level to show
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-
-def load_staging(csv_path,DATABASE_URL):
-    
+def load_bronze_table():
     try:
-        formulaDF = pd.read_csv(csv_path, index_col=0)
-        engine = create_engine(DATABASE_URL)
+        csv_path = os.getenv("DATA_CSV_PATH")
+        if not csv_path:
+            raise ValueError("DATA_CSV_PATH not set in environment variables")
         
-        formulaDF.to_sql(name='formula1_staging', con=engine, schema='bronze', if_exists='replace', index=False)
-        logging.info("Data successfully loaded to staging table")
+        df = pd.read_csv(csv_path)
 
+        df.to_sql(
+            name='formula1_staging',
+            con=engine,
+            schema='bronze',
+            if_exists='replace',
+            index=False
+        )
+        logging.info("Data successfully loaded to staging table")
 
     except Exception as e:
         logging.error(f"Failed to load data into staging table: {e}")
-
+        raise
 
 if __name__ == "__main__":
-    csv_path = os.getenv("DATA_CSV_PATH")
-    DATABASE_URL = get_database_url()
-    load_staging(csv_path,DATABASE_URL)
+    load_bronze_table()
