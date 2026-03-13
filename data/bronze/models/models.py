@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -11,7 +11,6 @@ class StagingFormula1(Base):
     resultId = Column(String)
     raceId = Column(String)
     driverId = Column(String)
-    circuitId = Column(String)
     constructorId = Column(String)
     number = Column(String)
     grid = Column(String)
@@ -29,6 +28,7 @@ class StagingFormula1(Base):
     statusId = Column(String)
     year = Column(String)
     round = Column(String)
+    circuitId = Column(String)
     name_x = Column(String)
     date = Column(String)
     time_races = Column(String)
@@ -83,4 +83,3 @@ class StagingFormula1(Base):
     positionText_constructorstandings = Column(String)
     wins_constructorstandings = Column(String)
     status = Column(String)
-

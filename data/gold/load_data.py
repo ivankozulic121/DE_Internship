@@ -81,9 +81,9 @@ def load_dim_circuits():
             NULLIF(s."name_y",'\\N'),
             NULLIF(s."location",'\\N'),
             NULLIF(s."country",'\\N'),
-            NULLIF(NULLIF(s."lat"::text, '\N'), '')::float,
-            NULLIF(NULLIF(s."lng"::text, '\N'), '')::float,
-            NULLIF(NULLIF(s."alt"::text, '\N'), '')::int,
+            NULLIF(NULLIF(s."lat"::text, '\\N'), '')::float,
+            NULLIF(NULLIF(s."lng"::text, '\\N'), '')::float,
+            NULLIF(NULLIF(s."alt"::text, '\\N'), '')::int,
             NULLIF(s."url_y"::text,'\\N')
         FROM silver.formula1_silver s
         ON CONFLICT ON CONSTRAINT dim_circuits_pkey DO NOTHING
@@ -123,7 +123,7 @@ def load_dim_date():
         INSERT INTO gold.dim_date
         ("date", "year", "month", "day", "quarter", "dayOfWeek")
         SELECT DISTINCT
-            TO_CHAR(NULLIF(NULLIF(s."date"::text,'\N'),'')::date, 'YYYYMMDD')::integer,
+            TO_CHAR(NULLIF(NULLIF(s."date"::text,'\\N'),'')::date, 'YYYYMMDD')::integer,
             EXTRACT(YEAR FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date),
             EXTRACT(MONTH FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date),
             EXTRACT(DAY FROM NULLIF(NULLIF(s."date"::text,'\\N'),'')::date),
@@ -158,13 +158,13 @@ def load_fact_results():
             NULLIF(NULLIF(s."position"::text,'\\N'),'')::int,
             NULLIF(s."positionText",'\\N'),
             NULLIF(NULLIF(s."positionOrder"::text,'\\N'),'')::int,
-            NULLIF(NULLIF(s."points"::text,'\\N'),'')::int,
+            NULLIF(NULLIF(s."points"::text,'\\N'),'')::float::int,
             NULLIF(NULLIF(s."laps"::text,'\\N'),'')::int,
-            NULLIF(s."time"::text,'\\N')::time,
-            NULLIF(NULLIF(s."milliseconds"::text,'\\N'),'')::int,
+            NULLIF(NULLIF(s."time"::text, '\\N'), '')::time,
+            NULLIF(NULLIF(s."milliseconds"::text,'\\N'),'')::float::int,
             NULLIF(NULLIF(s."fastestLap",'\\N'),'')::int,
             NULLIF(NULLIF(s."rank"::text,'\\N'),'')::int,
-            NULLIF(s."fastestLapTime"::text,'\\N')::time,
+            NULLIF(NULLIF(s."fastestLapTime"::text, '\\N'), '')::time,
             NULLIF(NULLIF(s."fastestLapSpeed",'\\N'),'')::float
         FROM silver.formula1_silver s
         JOIN gold.dim_drivers d ON d."driverRef" = s."driverRef"
@@ -172,7 +172,7 @@ def load_fact_results():
         JOIN gold.dim_circuits ci ON ci."circuitRef" = s."circuitRef"
         JOIN gold.dim_races r ON r."year" = NULLIF(NULLIF(s."year"::text,'\\N'),'')::int
                         AND r."round" = NULLIF(NULLIF(s."round"::text,'\\N'),'')::int
-        JOIN gold.dim_date t ON t.date = TO_CHAR(NULLIF(NULLIF(s."date"::text,'\N'),'')::date, 'YYYYMMDD')::integer
+        JOIN gold.dim_date t ON t.date = TO_CHAR(NULLIF(NULLIF(s."date"::text,'\\N'),'')::date, 'YYYYMMDD')::integer
         ON CONFLICT DO NOTHING
         """
         conn.execute(text(query))
@@ -191,10 +191,10 @@ def load_fact_pit_stops():
                 r."raceId"::int,
                 d."driverId"::int,
                 NULLIF(NULLIF(s."stop"::text,'\\N'),'')::int,
-                NULLIF(NULLIF(s."lap"::text,'\\N'),'')::int,
-                NULLIF(s."time"::text,'\\N')::time,
+                NULLIF(NULLIF(s."lap_pitstops"::text,'\\N'),'')::int,
+                NULLIF(NULLIF(s."time_pitstops"::text, '\\N'), '')::time,
                 NULLIF(s."duration"::text,'\\N')::float,
-                NULLIF(NULLIF(s."milliseconds"::text,'\\N'),'')::int
+                NULLIF(NULLIF(s."milliseconds_pitstops"::text,'\\N'),'')::float::int
             FROM silver.formula1_silver s
             JOIN gold.dim_drivers d ON d."driverRef" = s."driverRef"
             JOIN gold.dim_races r ON r.year = NULLIF(NULLIF(s."year"::text,'\\N'),'')::int
@@ -218,9 +218,9 @@ def load_fact_lap_times():
             r."raceId"::int,
             d."driverId"::int,
             NULLIF(NULLIF(s."lap"::text,'\\N'),'')::int,
-            NULLIF(NULLIF(s."position"::text,'\\N'),'')::int,
-            NULLIF(s."time"::text,'\\N')::time,
-            NULLIF(NULLIF(s."milliseconds"::text,'\\N'),'')::int
+            NULLIF(NULLIF(s."position_laptimes"::text,'\\N'),'')::int,
+            NULLIF(NULLIF(s."time_laptimes"::text, '\\N'), '')::time,
+            NULLIF(NULLIF(s."milliseconds_laptimes"::text,'\\N'),'')::float::int
         FROM silver.formula1_silver s
         JOIN gold.dim_drivers d ON d."driverRef" = s."driverRef"
         JOIN gold.dim_races r ON r.year = NULLIF(NULLIF(s."year"::text,'\\N'),'')::int

@@ -70,7 +70,7 @@ def load_fact_lap_times():
 with DAG(
     dag_id="etl_pipeline",        
     start_date=datetime(2026, 1, 1),  
-    schedule="* * * * *",           
+    schedule="*/30 * * * *",           
 ) as dag:
     
 

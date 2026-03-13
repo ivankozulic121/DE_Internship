@@ -22,21 +22,20 @@ def load_bronze_table():
         with engine.begin() as conn:
             conn.execute(text("TRUNCATE TABLE bronze.formula1_staging"))
             
-            # Koristi COPY za najbrže učitavanje
             with open(csv_path, 'r', encoding='utf-8') as f:
-                # Preskoči header ako postoji
                 
-                # PostgreSQL COPY komanda
                 cursor = conn.connection.cursor()
                 cursor.copy_expert(
                     """
-                    COPY bronze.formula1_staging 
-                    FROM STDIN WITH (
-                    FORMAT CSV,
-                    HEADER TRUE,
-                    DELIMITER ',',
-                    QUOTE '"'
-                    """, 
+                   
+                   COPY bronze.formula1_staging
+                            FROM STDIN
+                            WITH (
+                                FORMAT CSV,
+                                HEADER TRUE,
+                                QUOTE '"'
+                            )
+                        """, 
                     f
                 )
             
