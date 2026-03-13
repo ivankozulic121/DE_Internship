@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 from dotenv import load_dotenv
 import logging
-from data.db import get_database_url
+from data.db import engine
 
 load_dotenv()
 
@@ -12,9 +12,9 @@ logging.basicConfig(
     )
 
 
-def extract(DATABASE_URL):
+def extract():
+    df = pd.DataFrame()
     try:
-        engine = create_engine(DATABASE_URL)
         query = "SELECT * FROM bronze.formula1_staging"
         df = pd.read_sql(query, con=engine)
         logging.info(f"Successfully loaded {len(df)} rows from SQL table into DataFrame")
@@ -28,8 +28,7 @@ def extract(DATABASE_URL):
 
 
 if __name__ == "__main__":
-     DATABASE_URL = get_database_url()
-     extract(DATABASE_URL)
+     extract()
 
 
 
