@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from .models.models import Base
 from dotenv import load_dotenv
 import logging
-from data.db import get_database_url
+from data.db import engine
 
 load_dotenv()
 
@@ -11,12 +11,11 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-def create_bronze_tables(DATABASE_URL):
+def create_bronze_table():
     try:
-        engine = create_engine(DATABASE_URL)
-
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             conn.execute(text("CREATE SCHEMA IF NOT EXISTS bronze"))
+            conn.execute(text("DROP TABLE IF EXISTS bronze.formula1_staging CASCADE"))
             conn.commit()
 
         Base.metadata.create_all(engine)
@@ -28,5 +27,4 @@ def create_bronze_tables(DATABASE_URL):
 
 
 if __name__ == "__main__":
-    DATABASE_URL = get_database_url()
-    create_bronze_tables(DATABASE_URL)
+    create_bronze_table()
