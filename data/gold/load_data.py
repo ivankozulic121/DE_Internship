@@ -143,11 +143,12 @@ def load_fact_results():
     with engine.begin() as conn:
         query = r"""
         INSERT INTO gold.fact_results
-        ("raceId", "driverId", "constructorId", "circuitId", "dateId",
+        ("resultId", "raceId", "driverId", "constructorId", "circuitId", "dateId",
         "carNumber", "grid", "position", "positionText", "positionOrder",
         "points", "laps", "time", "milliseconds",
         "fastestLap", "rank", "fastestLapTime", "fastestLapSpeed")
         SELECT
+            s."resultId"::int,
             r."raceId"::int,
             d."driverId"::int,
             c."constructorId"::int,
@@ -212,20 +213,27 @@ def load_fact_lap_times():
     with engine.begin() as conn:
         query = """
         INSERT INTO gold.fact_lap_times
-        ("raceId", "driverId",
-        "lap", "position", "time", "milliseconds")
+        ("raceId", "driverId", "stop", "lap", "position", "time", "milliseconds")
         SELECT
-            r."raceId"::int,
-            d."driverId"::int,
+            r."raceId",
+            d."driverId",
+            NULLIF(NULLIF(s."stop"::text, '\\N'),'')::int,
             NULLIF(NULLIF(s."lap"::text,'\\N'),'')::int,
             NULLIF(NULLIF(s."position_laptimes"::text,'\\N'),'')::int,
             NULLIF(NULLIF(s."time_laptimes"::text, '\\N'), '')::time,
             NULLIF(NULLIF(s."milliseconds_laptimes"::text,'\\N'),'')::float::int
         FROM silver.formula1_silver s
-        JOIN gold.dim_drivers d ON d."driverRef" = s."driverRef"
-        JOIN gold.dim_races r ON r.year = NULLIF(NULLIF(s."year"::text,'\\N'),'')::int
-                        AND r.round = NULLIF(NULLIF(s."round"::text,'\\N'),'')::int
-        ON CONFLICT DO NOTHING
+        JOIN gold.dim_drivers d ON d."driverId" = s."driverId"::int
+        JOIN gold.dim_races r ON r."raceId" = s."raceId"::int
+        GROUP BY
+        r."raceId",
+        d."driverId",
+        s."stop",
+        s."lap",
+        s."position_laptimes",
+        s."time_laptimes",
+        s."milliseconds_laptimes"
+        ON CONFLICT DO NOTHING;
         """
         conn.execute(text(query))
         logger.info("Table fact_lap_times loaded successfully.")
@@ -240,14 +248,14 @@ def run_db_load(engine):
 
         logger.info("Starting DB load")
 
-        load_dim_drivers(conn)
-        load_dim_constructors(conn)
-        load_dim_circuits(conn)
-        load_dim_races(conn)
-        load_dim_date(conn)
-        load_fact_results(conn)
-        load_fact_pit_stops(conn)
-        load_fact_lap_times(conn)
+        load_dim_drivers()
+        load_dim_constructors()
+        load_dim_circuits()
+        load_dim_races()
+        load_dim_date()
+        load_fact_results()
+        load_fact_pit_stops()
+        load_fact_lap_times()
 
         logger.info("DB load finished")
 

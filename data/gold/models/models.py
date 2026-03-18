@@ -147,3 +147,15 @@ class LapTime(Base):
 
     driver = relationship("Driver", back_populates="lap_times")
     race = relationship("Race", back_populates="lap_times")
+
+
+class Weather(Base):
+    __tablename__ = "current_weather_forecast"
+    __table_args__ = {"schema": "gold"}
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    temperature = Column(DECIMAL)
+    humidity = Column(Integer)
+    pressure = Column(Integer)
+    wind_speed = Column(DECIMAL)
+    location = Column(String)

@@ -1,20 +1,9 @@
 import sys
 sys.path.insert(0, '/opt/airflow')
-#sys.path.insert(0, '/opt/airflow/dags/etl')
-#sys.path.insert(0, '/opt/airflow/dags/data/bronze')
-import os 
-from dotenv import load_dotenv
+
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 from datetime import datetime
-#from airflow.providers.postgres.sensors.postgres import PostgresTableSensor
-
-load_dotenv()
-
-
-def my_task():
-    print("Hello from Airflow task!")
-    return "Task complete"
 
 #BRONZE LAYER
 def create_bronze_table_task():
@@ -67,12 +56,24 @@ def load_fact_lap_times():
     from data.gold.load_data import load_fact_lap_times
     load_fact_lap_times()
 
+#Getting data from api and sending to kafka
+def fetch_weather_data_to_kafka():
+    from data.gold.get_weather_data import fetch_weather_data_to_kafka
+    fetch_weather_data_to_kafka()
+
+
+def load_weather_data_to_db():
+    from data.gold.load_weather_data import load_weather_data_to_db
+    load_weather_data_to_db()
+
+
+
 with DAG(
     dag_id="etl_pipeline",        
     start_date=datetime(2026, 1, 1),  
-    schedule="*/30 * * * *",           
+    schedule="*/30 * * * *",
+    max_active_runs=1     
 ) as dag:
-    
 
     task1 = PythonOperator(
         task_id="create_bronze_tables_task",
@@ -134,17 +135,22 @@ with DAG(
         python_callable=load_fact_lap_times
     )
 
+    task13 = PythonOperator(
+        task_id="fetch_weather_data_to_kafka",
+        python_callable=fetch_weather_data_to_kafka
+    )
 
-# wait_for_bronze_table = PostgresTableSensor(
-#     task_id="wait_for_bronze_table",
-#     postgres_conn_id="my_postgres_conn",
-#     table="formula1_staging",
-#     schema="bronze"
-# )
+    task14 = PythonOperator(
+        task_id="load_weather_data_to_db",
+        python_callable=load_weather_data_to_db
+    )
+
 
 task1 >> task2 >> task3 >> task4
 
 task4 >> task5 >> task6 >> task7 >> task8
 
 task8 >> task9 >> task10 >> task11 >> task12
+
+task12 >> task13 >> task14
 
