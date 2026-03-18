@@ -38,7 +38,7 @@ def load_weather_data_to_db():
             """), data)
 
             consumer.commit()
-        logging.info("Data successfully loaded from Kafka")
+        logging.info("Data successfully loaded from Kafka to database.")
 
 
 if __name__ == "__main__":
