@@ -1,1 +1,26 @@
-.env
+data_local
+
+
+# Ignoriše Python bytecode
+__pycache__/
+*.py[cod]
+
+# Ignoriše virtualna okruženja
+venv/
+env/
+.env/
+
+# Ignoriše lokalne konfiguracione fajlove
+*.sqlite3
+*.log
+*.pot
+*.mo
+
+# Ignoriše IDE/Editor fajlove
+.idea/
+.vscode/
+*.iml
+
+# Ignoriše OS fajlove
+.DS_Store
+Thumbs.db

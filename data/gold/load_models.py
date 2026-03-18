@@ -1,9 +1,9 @@
 import logging
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from .models.models import Base
-from data.db import get_database_url
+from data.db import engine
 
 load_dotenv()
 
@@ -13,18 +13,18 @@ logging.basicConfig(
 )
 
 
-def load_models(DATABASE_URL):
+def load_models():
     try:
+        with engine.begin() as conn:  
+            conn.execute(text("DROP SCHEMA IF EXISTS gold CASCADE"))
+            conn.execute(text("CREATE SCHEMA IF NOT EXISTS gold"))
 
-        engine = create_engine(DATABASE_URL, echo=False)
-
-        Base.metadata.create_all(engine)
-        logging.info("All tables successfully loaded into gold schema.")
+            Base.metadata.create_all(bind=conn)
+            logging.info("All tables successfully loaded into gold schema.")
 
     except Exception as e:
         logging.error(f"Error loading tables into DB: {e}")
 
 
 if __name__ == "__main__":
-    DATABASE_URL = get_database_url()
-    load_models(DATABASE_URL)
+    load_models()

@@ -1,4 +1,3 @@
-from sqlalchemy import create_engine
 from .extract import extract 
 import pandas as pd
 import re
@@ -13,8 +12,8 @@ def convert_duration_if_colon(s):
         else:
             return float(s)
 
-def transform(dataFrame):
-    
+def transform():
+    dataFrame = extract()
     null_values = ['\\N', 'nan', 'NaN', '', 'None']
 
     for col in dataFrame.columns:
@@ -42,7 +41,6 @@ def transform(dataFrame):
     return dataFrame
 
 if __name__ == "__main__":
-    formulaDF = extract()
-    transform(formulaDF)
+    transform()
 
 
